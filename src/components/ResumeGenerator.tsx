@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button, TextField, Typography, Container, Box, Slider } from '@mui/material';
+import axios from 'axios';
 
 const ResumeGenerator: React.FC = () => {
   const [jobTitle, setJobTitle] = useState('');
@@ -7,32 +8,54 @@ const ResumeGenerator: React.FC = () => {
   const [jobDescription, setJobDescription] = useState('');
   const [fontSize, setFontSize] = useState(14); // Font size customization
   const [lineHeight, setLineHeight] = useState(1.5); // Line height customization
-  const [generatedResume, setGeneratedResume] = useState<string | null>(null); // Store the generated resume (PDF preview URL or base64)
-  
+  const [generatedResume, setGeneratedResume] = useState<string | null>(null); // Store the generated resume (PDF preview URL)
+  const [loading, setLoading] = useState(false); // Loading state
+  const [error, setError] = useState<string | null>(null); // Error state
+
   const handleGenerateResume = async () => {
-    // Prepare data to send to the backend/LLM
-    const resumeData = {
-      jobTitle,
-      company,
-      jobDescription,
-      fontSize,
-      lineHeight,
-    };
+    setLoading(true);
+    setError(null);
 
-    console.log('Sending resume data to LLM:', resumeData);
+    try {
+      const username = localStorage.getItem('username'); // Assuming username is stored in localStorage
 
-    // Example: Simulate an API call to generate the resume via the LLM and return a PDF URL or base64 PDF
-    const jsonResponse = await mockGenerateResumeAPI(resumeData); // Replace this with real API call to LLM
-    setGeneratedResume(jsonResponse.pdfUrl); // Save the generated PDF for preview
-  };
+      if (!username) {
+        setError('Username not found. Please log in.');
+        setLoading(false);
+        return;
+      }
 
-  // Simulate backend LLM response (mock function)
-  const mockGenerateResumeAPI = async (data: any) => {
-    return new Promise<{ pdfUrl: string }>((resolve) => {
-      setTimeout(() => {
-        resolve({ pdfUrl: 'https://www.example.com/path-to-generated-pdf' }); // Simulate PDF URL or base64 response
-      }, 2000);
-    });
+      // Prepare data to send to the backend
+      const requestData = {
+        jobDescription,
+        fontSize,
+        lineHeight
+      };
+
+      // Make an API call to generate the resume via the backend
+      const response = await axios.post(
+        `http://127.0.0.1:5000/api/generate-resume?username=${username}`,
+        requestData,
+        {
+          headers: {
+            'Content-Type': 'application/json',  // Ensure the Content-Type is set
+          },
+          withCredentials: true,  // Allow cookies and credentials to be sent with the request
+          responseType: 'blob',   // Important for handling PDF response
+        }
+      );
+      
+
+      // Create a URL for the PDF file returned
+      const pdfUrl = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      setGeneratedResume(pdfUrl);
+
+    } catch (err) {
+      console.error('Error generating resume:', err);
+      setError('Failed to generate resume. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -99,10 +122,18 @@ const ResumeGenerator: React.FC = () => {
           fullWidth
           sx={{ mt: 3 }}
           onClick={handleGenerateResume}
+          disabled={loading}
         >
-          Generate Resume
+          {loading ? 'Generating Resume...' : 'Generate Resume'}
         </Button>
       </Box>
+
+      {/* Error Display */}
+      {error && (
+        <Typography color="error" variant="body1" sx={{ mt: 2 }}>
+          {error}
+        </Typography>
+      )}
 
       {/* PDF Preview */}
       {generatedResume && (

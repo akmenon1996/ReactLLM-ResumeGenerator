@@ -4,6 +4,7 @@ from flask import Flask
 from flask_cors import CORS
 from routes.user_routes import user_bp
 from routes.pdf_routes import pdf_bp
+from routes.resume_routes import resume_bp
 from db import db  # Import db from db.py
 from config import Config  # Import configuration
 
@@ -19,6 +20,7 @@ CORS(app, supports_credentials=True, resources={r"/*": {"origins": "http://local
 # Register Blueprints
 app.register_blueprint(user_bp)
 app.register_blueprint(pdf_bp)
+app.register_blueprint(resume_bp)
 
 # Initialize the database in the application context
 with app.app_context():

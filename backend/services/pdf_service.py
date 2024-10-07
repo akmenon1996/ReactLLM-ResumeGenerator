@@ -1,4 +1,171 @@
 from utils.pdf_utils import extract_text_from_pdf
+from fpdf import FPDF
+
+from jinja2 import Template
+import pdfkit
+import os
+
+# Define the HTML resume template
+resume_template = """
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: {{ font_size }}px;
+            color: #333;
+            line-height: {{ line_height }};
+        }
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        h2 {
+            font-size: 20px;
+            border-bottom: 2px solid #333;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+        h3 {
+            font-size: 18px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        p, ul {
+            margin-bottom: 5px;
+        }
+        ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #ddd;
+            margin: 15px 0;
+        }
+        .contact-info {
+            width: 100%;
+            display: table;
+            margin-bottom: 10px;
+        }
+        .contact-info span {
+            display: table-cell;
+            text-align: center;
+        }
+        .contact-info a {
+            color: #1a0dab;
+            text-decoration: none;
+        }
+        .contact-info a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>{{ name }}</h1>
+    <div class="contact-info">
+        {% for contact in contact_info %}
+            <span>{{ contact|safe }}</span>
+        {% endfor %}
+    </div>
+
+    <!-- Experience Section -->
+    <div class="experience">
+        <h2>Experience</h2>
+        {% for exp in experience %}
+            <h3>{{ exp['position'] }} at {{ exp['company'] }} ({{ exp['start_date'] }} - {{ exp['end_date'] }})</h3>
+            <ul>
+                {% for responsibility in exp['responsibilities'] %}
+                    <li>{{ responsibility }}</li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+    </div>
+
+    <!-- Education Section -->
+    <div class="education">
+        <h2>Education</h2>
+        {% for edu in education %}
+            <p>{{ edu['degree'] }}, {{ edu['institution'] }} ({{ edu['year'] }})</p>
+        {% endfor %}
+    </div>
+
+    <!-- Skills Section -->
+    <div class="skills">
+        <h2>Skills</h2>
+        <p>{{ ', '.join(skills) }}</p>
+    </div>
+
+    <!-- Projects Section (if available) -->
+    {% if projects %}
+    <div class="projects">
+        <h2>Projects</h2>
+        {% for project in projects %}
+            <h3>{{ project['title'] }}</h3>
+            <p>{{ project['description'] }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Certifications Section (if available) -->
+    {% if certifications %}
+    <div class="certifications">
+        <h2>Certifications</h2>
+        {% for cert in certifications %}
+            <p>{{ cert['name'] }}, Issued by {{ cert['issued_by'] }} ({{ cert['year'] }})</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Papers Section (if available) -->
+    {% if papers %}
+    <div class="papers">
+        <h2>Papers</h2>
+        {% for paper in papers %}
+            <p>{{ paper['title'] }} - <a href="{{ paper['url'] }}">{{ paper['url'] }}</a></p>
+        {% endfor %}
+    </div>
+    {% endif %}
+</body>
+</html>
+"""
+
+def create_resume_pdf(merged_resume_data,fontSize, lineHeight,output_path):
+    # Render the HTML template with the resume data
+    template = Template(resume_template)
+    rendered_html = template.render(
+        name=merged_resume_data.get('name', 'N/A'),
+        font_size=fontSize,  # You can customize this based on user input
+        line_height=lineHeight,  # You can customize this based on user input
+        contact_info=[
+            f"Email: {merged_resume_data.get('email', 'N/A')}",
+            f"Phone: {merged_resume_data.get('phone', 'N/A')}",
+            *[
+                f'<a href="{url["url"]}">{url["label"]}</a>' for url in merged_resume_data.get('urls', [])
+            ]
+        ],
+        experience=merged_resume_data.get('experience', ''),
+        education=merged_resume_data.get('education', ''),
+        skills=merged_resume_data.get('skills', ''),
+        projects=merged_resume_data.get('projects', ''),
+        certifications=merged_resume_data.get('certifications', ''),
+        papers=merged_resume_data.get('papers', '')
+    )
+
+    # Save the HTML to a file (optional for debugging)
+    with open('resume.html', 'w') as f:
+        f.write(rendered_html)
+
+    # Convert the HTML to PDF using pdfkit
+    pdfkit.from_string(rendered_html, output_path)
+
+    print(f"Resume PDF saved to {output_path}")
+
+
 
 def handle_pdf_upload(pdf_file):
     # Extract text from the uploaded PDF file

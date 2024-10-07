@@ -51,6 +51,7 @@ def update_profile():
     # Extract the email and name from the form data
     email = request.form.get('email')
     name = request.form.get('name')
+    phone = request.form.get('phone')
 
     # Handling the resume PDF upload or direct text input
     resume_text = None
@@ -97,7 +98,7 @@ def update_profile():
 
     if llm_response:
         # Call a function to update the rest of the profile (e.g., experience, skills, etc.)
-        result = process_profile(username, name, email, None, llm_response)
+        result = process_profile(username, name, email, phone, llm_response)
         db.session.commit()
         return jsonify(result), 200
     else:
