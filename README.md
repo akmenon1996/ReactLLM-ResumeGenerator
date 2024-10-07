@@ -1,70 +1,131 @@
-# Getting Started with Create React App
+# LLM-Powered Resume Builder
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is a full-stack application that allows users to create, update, and manage their profiles by uploading resumes in PDF format or manually entering data. The backend is powered by Flask, and the front end is built with React. The project leverages Large Language Models (LLM) to analyze and parse the uploaded resumes, and store the user profiles in a database.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **User Registration and Authentication**: Users can register and log in to manage their profiles.
+- **Profile Management**: Users can create and update their profiles, including adding experiences, education, skills, projects, certifications, papers, and external links (e.g., LinkedIn, GitHub).
+- **Resume Upload**: Users can upload a resume in PDF format or paste their resume text for analysis.
+- **LLM-Powered Resume Parsing**: The application uses an LLM to extract detailed information from uploaded resumes and populate user profiles.
+- **Profile Wipe**: Users can choose to wipe their existing profile data without deleting their account.
+- **URL Handling**: Users can add and update URLs for their external profiles (LinkedIn, GitHub, etc.).
 
-### `npm start`
+## Technologies Used
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Frontend**:
+  - React
+  - Material UI
+  - Axios
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **Backend**:
+  - Flask
+  - Flask-CORS
+  - Flask-SQLAlchemy
+  - SQLAlchemy ORM
+  - WerkZeug (for file uploads)
+  
+- **Database**:
+  - SQLite (can be easily swapped with any relational database)
 
-### `npm test`
+- **Services**:
+  - LLM (for resume parsing and profile generation)
+  - PDF Handling (to extract text from PDFs)
+  
+## Project Structure
+ ├── backend │ ├── models │ │ ├── user.py # SQLAlchemy models for UserProfile and related models (Experience, Education, etc.) │ ├── routes │ │ ├── user_routes.py # Flask routes for user-related operations (register, login, update profile, etc.) │ ├── services │ │ ├── auth_service.py # Service to handle user authentication (register, login) │ │ ├── user_service.py # Service to handle profile processing (update profile, wipe profile) │ │ ├── llm_service.py # Service to interact with the LLM for resume parsing │ │ ├── pdf_service.py # Service to extract text from PDF resumes │ ├── db.py # SQLAlchemy database configuration │ ├── app.py # Flask application setup and initialization │ └── README.md # Project documentation │
+└── frontend ├── src │ ├── components │ │ ├── UpdateProfile.js # React component for updating the user's profile │ │ ├── CurrentProfile.js # React component for displaying the current profile ├── README.md # Project documentation └── package.json # Frontend dependencies
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-### `npm run build`
+## Installation
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Backend Setup
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+1. Clone the repository:
+```bash
+   git clone https://github.com/your-username/llm-resume-builder.git
+   cd llm-resume-builder/backend
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+python3 -m venv ResumegeneratorVenv
+source ResumegeneratorVenv/bin/activate  # On Windows use: ResumegeneratorVenv\Scripts\activate
 
-### `npm run eject`
+2. Set up a Python virtual environment:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+python3 -m venv ResumegeneratorVenv
+source ResumegeneratorVenv/bin/activate  
+# On Windows use: ResumegeneratorVenv\Scripts\activate
+```
+3. Install Dependencies 
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+pip install -r requirements.txt
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+4. Initialize SQLLite DB
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```bash
+flask db init
+flask db migrate
+flask db upgrade
+```
 
-## Learn More
+5. Run Flash development server
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+```bash
+flask run
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Frontend Setup
 
-### Code Splitting
+Navigate to the frontend directory:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```bash
+cd ../frontend
+Install dependencies:
+```
 
-### Analyzing the Bundle Size
+```bash
+npm install
+Start the React development server:
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```bash
+npm start
+```
 
-### Making a Progressive Web App
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+Open your browser and go to http://localhost:3000.
 
-### Advanced Configuration
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## API Endpoints
 
-### Deployment
+### User Management
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- POST /api/register
+ Registers a new user.
 
-### `npm run build` fails to minify
+- POST /api/login
+Authenticates a user and returns a session.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### Profile Management
+
+- GET /api/profile?username={username}
+Retrieves the user profile by username.
+
+- POST /api/profile
+Updates the user profile based on form data (resume PDF or pasted text).
+
+- POST /api/profile/wipe?username={username}
+Wipes the user profile but keeps the account.
+
+### Environment Variables
+FLASK_ENV: Set to development during development.
+DATABASE_URL: Set the database URL (optional if using SQLite).
+OPENAI_API_KEY: Set openAI credentials
+
+
+Contributing
+Contributions are welcome! Please submit a pull request or open an issue for any bugs or feature requests.
+
