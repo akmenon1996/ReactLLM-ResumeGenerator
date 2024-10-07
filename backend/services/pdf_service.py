@@ -54,7 +54,7 @@ resume_template = """
         }
         .contact-info span {
             display: table-cell;
-            text-align: center;
+            margin: 0 15px;  
         }
         .contact-info a {
             color: #1a0dab;
@@ -68,10 +68,14 @@ resume_template = """
 <body>
     <h1>{{ name }}</h1>
     <div class="contact-info">
-        {% for contact in contact_info %}
-            <span>{{ contact|safe }}</span>
-        {% endfor %}
-    </div>
+    <span>Email: {{ email }}</span>
+    {% if phone %}
+        <span>Phone: {{ phone }}</span>
+    {% endif %}
+    {% for url in urls %}
+        <span><a href="{{ url['url'] }}">{{ url['label'] }}</a></span>
+    {% endfor %}
+</div>
 
     <!-- Experience Section -->
     <div class="experience">
@@ -137,23 +141,20 @@ resume_template = """
 def create_resume_pdf(merged_resume_data,fontSize, lineHeight,output_path):
     # Render the HTML template with the resume data
     template = Template(resume_template)
+    print(merged_resume_data)
     rendered_html = template.render(
         name=merged_resume_data.get('name', 'N/A'),
+        email=merged_resume_data.get('email', 'N/A'),
+        phone=merged_resume_data.get('phone', None),  # Use None if no phone number exists
+        urls=merged_resume_data.get('urls', []),  # URLs are passed separately
         font_size=fontSize,  # You can customize this based on user input
         line_height=lineHeight,  # You can customize this based on user input
-        contact_info=[
-            f"Email: {merged_resume_data.get('email', 'N/A')}",
-            f"Phone: {merged_resume_data.get('phone', 'N/A')}",
-            *[
-                f'<a href="{url["url"]}">{url["label"]}</a>' for url in merged_resume_data.get('urls', [])
-            ]
-        ],
-        experience=merged_resume_data.get('experience', ''),
-        education=merged_resume_data.get('education', ''),
-        skills=merged_resume_data.get('skills', ''),
-        projects=merged_resume_data.get('projects', ''),
-        certifications=merged_resume_data.get('certifications', ''),
-        papers=merged_resume_data.get('papers', '')
+        experience=merged_resume_data.get('experience', []),  # Pass experience as a list
+        education=merged_resume_data.get('education', []),  # Pass education as a list
+        skills=merged_resume_data.get('skills', []),  # Pass skills as a list
+        projects=merged_resume_data.get('projects', []),  # Pass projects as a list
+        certifications=merged_resume_data.get('certifications', []),  # Pass certifications as a list
+        papers=merged_resume_data.get('papers', [])  # Pass papers as a list
     )
 
     # Save the HTML to a file (optional for debugging)

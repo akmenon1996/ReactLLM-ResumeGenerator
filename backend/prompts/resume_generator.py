@@ -11,6 +11,13 @@ DO NOT MAKE UP ANYTHING that is not part of the user's job history.
 * You do not have to include all points in a candidate's job history. Make decisions on what will be relevant to the job description at hand. 
 * If needed you can combine multiple points together into a single point. Always ensure to provide a holistic view of the candidate, showcasing all ability. 
 </IMPORTANT TIPS>
+
+<IMPORTANT>
+* Only include job experiences, projects, and papers that are relevant to the job description. Omit any experiences that are not aligned with the skills or responsibilities needed for the role.
+* Make sure the resume is concise and well-formatted to fit on a single page.
+</IMPORTANT>
+
+
 **Job Description:**
 {job_description}
 
