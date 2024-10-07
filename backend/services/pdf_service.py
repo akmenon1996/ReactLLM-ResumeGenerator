@@ -1,9 +1,9 @@
 from utils.pdf_utils import extract_text_from_pdf
 from fpdf import FPDF
-
 from jinja2 import Template
 import pdfkit
 import os
+from datetime import datetime
 
 # Define the HTML resume template
 resume_template = """
@@ -34,6 +34,12 @@ resume_template = """
             margin-bottom: 5px;
             display: flex;
             justify-content: space-between;
+        }
+        .date-right {
+            margin-left: auto;
+            text-align: right;
+            font-size: 14px; /* Make dates smaller */
+            color: #555; /* Slightly lighter color for dates */
         }
         p, ul {
             margin-bottom: 5px;
@@ -81,7 +87,10 @@ resume_template = """
     <div class="experience">
         <h2>Experience</h2>
         {% for exp in experience %}
-            <h3>{{ exp['position'] }} at {{ exp['company'] }} ({{ exp['start_date'] }} - {{ exp['end_date'] }})</h3>
+            <h3>
+                <span>{{ exp['position'] }} at {{ exp['company'] }},  </span>
+                <span class="date-right">{{ exp['start_date'] }} - {{ exp['end_date'] }}</span>
+            </h3>
             <ul>
                 {% for responsibility in exp['responsibilities'] %}
                     <li>{{ responsibility }}</li>
@@ -138,17 +147,31 @@ resume_template = """
 </html>
 """
 
-def create_resume_pdf(merged_resume_data,fontSize, lineHeight,output_path):
+
+# Function to format the date into a short form (e.g., "Mar 23")
+def format_date(date_string):
+    try:
+        date_obj = datetime.strptime(date_string, '%Y-%m-%d')
+        return date_obj.strftime('%b %y')  # Format as "Mar 23"
+    except (ValueError, TypeError):
+        return date_string 
+
+
+def create_resume_pdf(merged_resume_data, fontSize, lineHeight, output_path):
+    # Format the dates before passing into the template
+    for exp in merged_resume_data.get('experience', []):
+        exp['start_date'] = format_date(exp.get('start_date', ''))
+        exp['end_date'] = format_date(exp.get('end_date', ''))
+
     # Render the HTML template with the resume data
     template = Template(resume_template)
-    print(merged_resume_data)
     rendered_html = template.render(
         name=merged_resume_data.get('name', 'N/A'),
         email=merged_resume_data.get('email', 'N/A'),
         phone=merged_resume_data.get('phone', None),  # Use None if no phone number exists
         urls=merged_resume_data.get('urls', []),  # URLs are passed separately
-        font_size=fontSize,  # You can customize this based on user input
-        line_height=lineHeight,  # You can customize this based on user input
+        font_size=fontSize,  # Customize based on user input
+        line_height=lineHeight,  # Customize based on user input
         experience=merged_resume_data.get('experience', []),  # Pass experience as a list
         education=merged_resume_data.get('education', []),  # Pass education as a list
         skills=merged_resume_data.get('skills', []),  # Pass skills as a list
@@ -165,8 +188,6 @@ def create_resume_pdf(merged_resume_data,fontSize, lineHeight,output_path):
     pdfkit.from_string(rendered_html, output_path)
 
     print(f"Resume PDF saved to {output_path}")
-
-
 
 def handle_pdf_upload(pdf_file):
     # Extract text from the uploaded PDF file

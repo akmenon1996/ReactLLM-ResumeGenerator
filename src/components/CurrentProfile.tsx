@@ -90,6 +90,10 @@ const CurrentProfile: React.FC = () => {
                 <strong>Email:</strong> {profile.email}
               </Typography>
 
+              <Typography variant="body1">
+                <strong>Phone:</strong> {profile.phone}
+              </Typography>
+
               {/* Display Experiences */}
               <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
                 Experiences
