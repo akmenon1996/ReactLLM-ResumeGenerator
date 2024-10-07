@@ -1,0 +1,585 @@
+File Path: /Users/abhijitkrishnamenon/code_packages/ReactResumeBuilder/llm-resume-generator/backend/models/user.py
+File Size: 4873 bytes
+Last Modified: Sun Oct  6 18:12:45 2024
+Encoding: ascii
+Content:
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+
+db = SQLAlchemy()
+
+# User Profile model
+class UserProfile(db.Model):
+    __tablename__ = 'user_profiles'
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(128), nullable=False)  # For authentication
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    # Relationships to other models
+    experiences = db.relationship('Experience', backref='user_profile', lazy=True)
+    education = db.relationship('Education', backref='user_profile', lazy=True)
+    skills = db.relationship('Skill', backref='user_profile', lazy=True)
+    projects = db.relationship('Project', backref='user_profile', lazy=True)
+    certifications = db.relationship('Certification', backref='user_profile', lazy=True)
+    papers = db.relationship('Paper', backref='user_profile', lazy=True)
+
+    def to_json(self):
+        return {
+            'username': self.username,
+            'email': self.email,
+            'experiences': [exp.to_json() for exp in self.experiences],
+            'education': [edu.to_json() for edu in self.education],
+            'skills': [skill.to_json() for skill in self.skills],
+            'projects': [project.to_json() for project in self.projects],
+            'certifications': [cert.to_json() for cert in self.certifications],
+            'papers': [paper.to_json() for paper in self.papers],
+            'created_at': self.created_at,
+            'updated_at': self.updated_at
+        }
+
+# Experience model
+class Experience(db.Model):
+    __tablename__ = 'experiences'
+
+    id = db.Column(db.Integer, primary_key=True)
+    position = db.Column(db.String(100), nullable=False)
+    company = db.Column(db.String(100), nullable=False)
+    start_date = db.Column(db.String(10))  # Use string to store date (YYYY-MM-DD)
+    end_date = db.Column(db.String(10))  # Could also store 'Present'
+    description = db.Column(db.Text, nullable=True)
+    user_profile_id = db.Column(db.Integer, db.ForeignKey('user_profiles.id'), nullable=False)
+
+    def to_json(self):
+        return {
+            'position': self.position,
+            'company': self.company,
+            'start_date': self.start_date,
+            'end_date': self.end_date,
+            'description': self.description
+        }
+
+# Education model
+class Education(db.Model):
+    __tablename__ = 'education'
+
+    id = db.Column(db.Integer, primary_key=True)
+    degree = db.Column(db.String(100), nullable=False)
+    institution = db.Column(db.String(100), nullable=False)
+    year = db.Column(db.String(4))  # Year of graduation or completion
+    user_profile_id = db.Column(db.Integer, db.ForeignKey('user_profiles.id'), nullable=False)
+
+    def to_json(self):
+        return {
+            'degree': self.degree,
+            'institution': self.institution,
+            'year': self.year
+        }
+
+# Skill model
+class Skill(db.Model):
+    __tablename__ = 'skills'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    user_profile_id = db.Column(db.Integer, db.ForeignKey('user_profiles.id'), nullable=False)
+
+    def to_json(self):
+        return {
+            'name': self.name
+        }
+
+# Project model
+class Project(db.Model):
+    __tablename__ = 'projects'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    user_profile_id = db.Column(db.Integer, db.ForeignKey('user_profiles.id'), nullable=False)
+
+    def to_json(self):
+        return {
+            'title': self.title,
+            'description': self.description
+        }
+
+# Certification model
+class Certification(db.Model):
+    __tablename__ = 'certifications'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    issued_by = db.Column(db.String(100), nullable=False)
+    year = db.Column(db.String(4))  # Year of certification
+    user_profile_id = db.Column(db.Integer, db.ForeignKey('user_profiles.id'), nullable=False)
+
+    def to_json(self):
+        return {
+            'name': self.name,
+            'issued_by': self.issued_by,
+            'year': self.year
+        }
+
+# Paper model
+class Paper(db.Model):
+    __tablename__ = 'papers'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    url = db.Column(db.String(200), nullable=True)
+    user_profile_id = db.Column(db.Integer, db.ForeignKey('user_profiles.id'), nullable=False)
+
+    def to_json(self):
+        return {
+            'title': self.title,
+            'url': self.url
+        }
+
+--------------------------------------------------------------------------------
+
+File Path: /Users/abhijitkrishnamenon/code_packages/ReactResumeBuilder/llm-resume-generator/backend/models/__init__.py
+File Size: 0 bytes
+Last Modified: Sun Oct  6 18:16:26 2024
+Encoding: None
+Content:
+
+--------------------------------------------------------------------------------
+
+File Path: /Users/abhijitkrishnamenon/code_packages/ReactResumeBuilder/llm-resume-generator/backend/prompts/resume_parser.py
+File Size: 3291 bytes
+Last Modified: Sun Oct  6 16:02:04 2024
+Encoding: utf-8
+Content:
+resume_parser_prompt = """
+Please extract the following information from the provided resume text and return it in the exact JSON format specified below. Ensure that every detail is captured as it is in the resume, without summarizing or condensing any points. 
+
+Include all bullet points, descriptions, and details under each section.
+
+- List of experiences, including:
+  - "position": The job title or role.
+  - "company": The name of the organization.
+  - "start_date": The start date in YYYY-MM-DD format (or approximate month/year if exact date is not available).
+  - "end_date": The end date in YYYY-MM-DD format (or "Present" if the role is ongoing).
+  - "description": A detailed description of the responsibilities, achievements, and projects, including all bullet points and details as they appear in the resume.
+
+- List of education, including:
+  - "degree": The degree or certification obtained.
+  - "institution": The name of the institution where the degree was obtained.
+  - "year": The year of graduation or completion.
+
+- List of skills.
+
+- List of projects, including:
+  - "title": The project title.
+  - "description": A detailed description of the project, including all bullet points and details as they appear in the resume.
+
+- List of certifications, including:
+  - "name": The name of the certification.
+  - "issued_by": The organization or institution that issued the certification.
+  - "year": The year the certification was obtained.
+
+- List of papers, including:
+  - "title": The title of the paper.
+  - "url": URL of the paper
+
+Please respond with the information formatted as follows:
+
+```json
+{
+  "experience": [
+    {
+      "position": "Software Engineer",
+      "company": "Tech Company",
+      "start_date": "2020-01-15",
+      "end_date": "2022-06-30",
+      "description": "Developed and maintained web applications. • Designed a scalable architecture for handling 100k+ users per day. • Led a team of 5 engineers to implement new features. • Improved application response time by 50%."
+    },
+    {
+      "position": "Data Analyst",
+      "company": "Data Corp",
+      "start_date": "2018-05-01",
+      "end_date": "2020-01-10",
+      "description": "Analyzed data trends and created reports. • Built dashboards to visualize key metrics. • Automated data pipelines, reducing processing time by 30%. • Collaborated with cross-functional teams to deliver insights."
+    }
+  ],
+  "education": [
+    {
+      "degree": "Bachelor of Science in Computer Science",
+      "institution": "University of Example",
+      "year": "2018"
+    }
+  ],
+  "skills": [
+    "Python", "Data Analysis", "Machine Learning", "SQL", "AWS"
+  ],
+  "projects": [
+    {
+      "title": "AI-Powered Resume Generator",
+      "description": "Developed an AI-powered resume generator application using Streamlit and OpenAI GPT-4 API. • Implemented a robust profile management system with session state handling and database integration using SQLAlchemy."
+    }
+  ],
+  "certifications": [
+    {
+      "name": "AWS Certified Solutions Architect",
+      "issued_by": "Amazon Web Services",
+      "year": "2020"
+    }
+  ],
+  "papers": [
+    {
+      "title": "Advanced Data Analysis Techniques",
+      "publication": "Journal of Data Science",
+      "year": "2021"
+    }
+  ]
+}
+"""
+--------------------------------------------------------------------------------
+
+File Path: /Users/abhijitkrishnamenon/code_packages/ReactResumeBuilder/llm-resume-generator/backend/routes/user_routes.py
+File Size: 3372 bytes
+Last Modified: Sun Oct  6 18:11:14 2024
+Encoding: ascii
+Content:
+from flask import Blueprint, request, jsonify
+from flask_cors import cross_origin
+from services.auth_service import register_user, login_user
+from services.user_service import process_profile
+from services.llm_service import generate_profile_via_llm
+from services.pdf_service import handle_pdf_upload
+from werkzeug.utils import secure_filename
+from models.user import UserProfile, db
+import os
+import tempfile
+
+user_bp = Blueprint('user_bp', __name__)
+
+# Path to save uploaded files temporarily
+UPLOAD_FOLDER = os.path.join(tempfile.gettempdir(), 'uploads')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# Registration Route
+@user_bp.route('/api/register', methods=['POST', 'OPTIONS'])
+@cross_origin(origin='http://localhost:3000', supports_credentials=True)
+def register():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+    email = data.get('email')
+
+    response, status_code = register_user(username, password, email)
+    return jsonify(response), status_code
+
+# Login Route
+@user_bp.route('/api/login', methods=['POST', 'OPTIONS'])
+@cross_origin(origin='http://localhost:3000', supports_credentials=True)
+def login():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+
+    response, status_code = login_user(username, password)
+    return jsonify(response), status_code
+
+# Profile Update Route - Handle PDF or Text Input
+@user_bp.route('/api/profile', methods=['POST'])
+@cross_origin(origin='http://localhost:3000', supports_credentials=True)  # Add CORS support
+def update_profile():
+    username = request.form.get('username')
+    email = request.form.get('email')
+
+    resume_text = None
+
+    if 'resume_pdf' in request.files:
+        # Handle PDF upload using the pdf_service
+        pdf_file = request.files['resume_pdf']
+        filename = secure_filename(pdf_file.filename)
+        file_path = os.path.join(UPLOAD_FOLDER, filename)
+        pdf_file.save(file_path)
+
+        # Extract text from the PDF using the pdf_service
+        resume_text = handle_pdf_upload(file_path)
+        if not resume_text:
+            return jsonify({"message": "Error processing PDF"}), 500
+    else:
+        # Handle direct text input
+        resume_text = request.form.get('resume_text')
+        if not resume_text:
+            return jsonify({"message": "No resume text provided"}), 400
+
+    # Call the LLM service to process the resume text
+    llm_response = generate_profile_via_llm(resume_text)
+    
+    if llm_response:
+        # Process the response and store it in the database
+        result = process_profile(username, email, llm_response)
+        return jsonify(result), 200
+    else:
+        return jsonify({"message": "Error processing profile via LLM"}), 500
+
+# Get Profile Route
+@user_bp.route('/api/profile', methods=['GET'])
+@cross_origin(origin='http://localhost:3000', supports_credentials=True)  # Add CORS support
+def get_profile():
+    username = request.args.get('username')  # Get the username from query params
+    if not username:
+        return jsonify({"message": "Username is required"}), 400
+
+    # Query the database for the user profile
+    user_profile = UserProfile.query.filter_by(username=username).first()
+    if user_profile:
+        return jsonify(user_profile.to_json()), 200
+    else:
+        return jsonify({"message": "User not found"}), 404
+
+--------------------------------------------------------------------------------
+
+File Path: /Users/abhijitkrishnamenon/code_packages/ReactResumeBuilder/llm-resume-generator/backend/routes/pdf_routes.py
+File Size: 558 bytes
+Last Modified: Sun Oct  6 15:52:27 2024
+Encoding: ascii
+Content:
+from flask import Blueprint, request, jsonify
+from services.pdf_service import handle_pdf_upload
+
+pdf_bp = Blueprint('pdf', __name__)
+
+@pdf_bp.route('/api/upload-pdf', methods=['POST'])
+def upload_pdf():
+    if 'file' not in request.files:
+        return jsonify({"message": "No file part"}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"message": "No selected file"}), 400
+
+    # Process the PDF file and extract text
+    pdf_text = handle_pdf_upload(file)
+    return jsonify({"extracted_text": pdf_text}), 200
+
+--------------------------------------------------------------------------------
+
+File Path: /Users/abhijitkrishnamenon/code_packages/ReactResumeBuilder/llm-resume-generator/backend/services/auth_service.py
+File Size: 1482 bytes
+Last Modified: Sun Oct  6 15:55:33 2024
+Encoding: ascii
+Content:
+from models.user import UserProfile, db
+import hashlib
+import os
+
+# Function to hash passwords using PBKDF2
+def hash_password(password):
+    salt = os.urandom(16)
+    hashed_password = hashlib.pbkdf2_hmac(
+        'sha256',
+        password.encode('utf-8'),
+        salt,
+        100000
+    )
+    return salt.hex() + ':' + hashed_password.hex()
+
+# Function to verify the password
+def verify_password(stored_password, provided_password):
+    salt, stored_hash = stored_password.split(':')
+    hashed_password = hashlib.pbkdf2_hmac(
+        'sha256',
+        provided_password.encode('utf-8'),
+        bytes.fromhex(salt),
+        100000
+    ).hex()
+    return hashed_password == stored_hash
+
+# User Registration
+def register_user(username, password, email):
+    # Check if user already exists
+    if UserProfile.query.filter_by(username=username).first():
+        return {"message": "Username already exists!"}, 400
+    
+    # Create a new user
+    hashed_password = hash_password(password)
+    new_user = UserProfile(username=username, password=hashed_password, email=email)
+    
+    db.session.add(new_user)
+    db.session.commit()
+    return {"message": "User registered successfully!"}, 201
+
+# User Login
+def login_user(username, password):
+    user = UserProfile.query.filter_by(username=username).first()
+    if user and verify_password(user.password, password):
+        return {"message": "Login successful!"}, 200
+    return {"message": "Invalid username or password!"}, 401
+
+--------------------------------------------------------------------------------
+
+File Path: /Users/abhijitkrishnamenon/code_packages/ReactResumeBuilder/llm-resume-generator/backend/services/pdf_service.py
+File Size: 261 bytes
+Last Modified: Sun Oct  6 15:52:16 2024
+Encoding: ascii
+Content:
+from utils.pdf_utils import extract_text_from_pdf
+
+def handle_pdf_upload(pdf_file):
+    # Extract text from the uploaded PDF file
+    pdf_text = extract_text_from_pdf(pdf_file)
+    # Return the extracted text for further processing (by LLM)
+    return pdf_text
+
+--------------------------------------------------------------------------------
+
+File Path: /Users/abhijitkrishnamenon/code_packages/ReactResumeBuilder/llm-resume-generator/backend/services/llm_service.py
+File Size: 1720 bytes
+Last Modified: Sun Oct  6 18:02:31 2024
+Encoding: ascii
+Content:
+from openai import OpenAI
+import os
+import json
+import re
+# Load OpenAI API key from environment variables
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+def generate_profile_via_llm(resume_text):
+    """
+    This function sends the resume text to OpenAI's API with a specific prompt to get a structured JSON response.
+    :param resume_text: The text extracted from the resume (or manually entered data).
+    :return: A structured JSON response from the LLM (or None if there is an error).
+    """
+    # Import the resume_parser_prompt from the prompts folder
+    from prompts.resume_parser import resume_parser_prompt  
+    try:
+        # Format the final prompt with the resume text
+        prompt = f"{resume_parser_prompt}\n\nResume Text:\n{resume_text}"
+
+        response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+
+        # Extract the generated structured JSON response from the LLM
+        llm_response_text = response.choices[0].message.content.strip()
+
+        # Clean up and attempt to parse the response as JSON
+        llm_response_cleaned = re.sub(r'^```json\s*|\s*```$', '', llm_response_text)
+        structured_response = json.loads(llm_response_cleaned)
+        print(structured_response)
+
+        return structured_response
+
+    except json.JSONDecodeError as json_error:
+        print(f"Error parsing JSON from LLM response: {str(json_error)}")
+        return None
+    except Exception as e:
+        print(f"Error calling OpenAI API: {str(e)}")
+        return None
+
+--------------------------------------------------------------------------------
+
+File Path: /Users/abhijitkrishnamenon/code_packages/ReactResumeBuilder/llm-resume-generator/backend/services/user_service.py
+File Size: 2452 bytes
+Last Modified: Sun Oct  6 18:18:09 2024
+Encoding: ascii
+Content:
+from models.user import UserProfile,Experience,Education, Skill, Project, Certification, Paper
+
+
+def process_profile(username, email, llm_response):
+    try:
+        user_profile = UserProfile.query.filter_by(username=username).first()
+
+        if not user_profile:
+            user_profile = UserProfile(username=username, email=email)
+            db.session.add(user_profile)
+            db.session.commit()
+
+        Experience.query.filter_by(user_profile_id=user_profile.id).delete()
+        Education.query.filter_by(user_profile_id=user_profile.id).delete()
+        Skill.query.filter_by(user_profile_id=user_profile.id).delete()
+        Project.query.filter_by(user_profile_id=user_profile.id).delete()
+        Certification.query.filter_by(user_profile_id=user_profile.id).delete()
+        Paper.query.filter_by(user_profile_id=user_profile.id).delete()
+
+        for exp in llm_response.get('experience', []):
+            new_exp = Experience(
+                position=exp.get('position'),
+                company=exp.get('company'),
+                start_date=exp.get('start_date'),
+                end_date=exp.get('end_date'),
+                description=exp.get('description'),
+                user_profile_id=user_profile.id
+            )
+            db.session.add(new_exp)
+
+        for edu in llm_response.get('education', []):
+            new_edu = Education(
+                degree=edu.get('degree'),
+                institution=edu.get('institution'),
+                year=edu.get('year'),
+                user_profile_id=user_profile.id
+            )
+            db.session.add(new_edu)
+
+        for skill in llm_response.get('skills', []):
+            new_skill = Skill(name=skill, user_profile_id=user_profile.id)
+            db.session.add(new_skill)
+
+        for cert in llm_response.get('certifications', []):
+            new_cert = Certification(name=cert.get('name'), issued_by=cert.get('issued_by'), year=cert.get('year'), user_profile_id=user_profile.id)
+            db.session.add(new_cert)
+
+        for paper in llm_response.get('papers', []):
+            new_paper = Paper(title=paper.get('title'), url=paper.get('url'), user_profile_id=user_profile.id)
+            db.session.add(new_paper)
+
+        db.session.commit()
+
+        return {"message": "Profile updated successfully!"}, 200
+
+    except Exception as e:
+        print(f"Error processing profile: {e}")
+        return {"message": "Error updating profile"}, 500
+
+--------------------------------------------------------------------------------
+File Path: /Users/abhijitkrishnamenon/code_packages/ReactResumeBuilder/llm-resume-generator/backend/app.py
+File Size: 2452 bytes
+Last Modified: Sun Oct  6 18:18:09 2024
+Encoding: ascii
+Content:
+
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
+from models.user import db  # Ensure your User model is imported
+from routes.user_routes import user_bp
+from routes.pdf_routes import pdf_bp
+
+app = Flask(__name__)
+
+# Configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Initialize the SQLAlchemy instance with the app
+db = SQLAlchemy(app)
+
+# Enable CORS globally
+CORS(app, supports_credentials=True, resources={r"/*": {"origins": "http://localhost:3000"}})
+
+# Register Blueprints
+app.register_blueprint(user_bp)
+app.register_blueprint(pdf_bp)
+
+# Initialize the database in the application context
+with app.app_context():
+    db.create_all()
+
+if __name__ == '__main__':
+    app.run(debug=True)
