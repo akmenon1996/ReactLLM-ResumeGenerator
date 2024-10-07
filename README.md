@@ -33,8 +33,29 @@ This project is a full-stack application that allows users to create, update, an
   - PDF Handling (to extract text from PDFs)
   
 ## Project Structure
- ├── backend │ ├── models │ │ ├── user.py # SQLAlchemy models for UserProfile and related models (Experience, Education, etc.) │ ├── routes │ │ ├── user_routes.py # Flask routes for user-related operations (register, login, update profile, etc.) │ ├── services │ │ ├── auth_service.py # Service to handle user authentication (register, login) │ │ ├── user_service.py # Service to handle profile processing (update profile, wipe profile) │ │ ├── llm_service.py # Service to interact with the LLM for resume parsing │ │ ├── pdf_service.py # Service to extract text from PDF resumes │ ├── db.py # SQLAlchemy database configuration │ ├── app.py # Flask application setup and initialization │ └── README.md # Project documentation │
-└── frontend ├── src │ ├── components │ │ ├── UpdateProfile.js # React component for updating the user's profile │ │ ├── CurrentProfile.js # React component for displaying the current profile ├── README.md # Project documentation └── package.json # Frontend dependencies
+
+├── backend
+│   ├── models
+│   │   ├── user.py               # SQLAlchemy models for UserProfile and related models (Experience, Education, etc.)
+│   ├── routes
+│   │   ├── user_routes.py         # Flask routes for user-related operations (register, login, update profile, etc.)
+│   ├── services
+│   │   ├── auth_service.py        # Service to handle user authentication (register, login)
+│   │   ├── user_service.py        # Service to handle profile processing (update profile, wipe profile)
+│   │   ├── llm_service.py         # Service to interact with the LLM for resume parsing
+│   │   ├── pdf_service.py         # Service to extract text from PDF resumes
+│   ├── db.py                      # SQLAlchemy database configuration
+│   ├── app.py                     # Flask application setup and initialization
+│   └── README.md                  # Project documentation
+│
+└── frontend
+    ├── src
+    │   ├── components
+    │   │   ├── UpdateProfile.js   # React component for updating the user's profile
+    │   │   ├── CurrentProfile.js  # React component for displaying the current profile
+    ├── README.md                  # Project documentation
+    └── package.json               # Frontend dependencies
+
 
 
 ## Installation
