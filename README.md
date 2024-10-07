@@ -33,7 +33,7 @@ This project is a full-stack application that allows users to create, update, an
   - PDF Handling (to extract text from PDFs)
   
 ## Project Structure
-
+\```plaintext
 ├── backend
 │   ├── models
 │   │   ├── user.py               # SQLAlchemy models for UserProfile and related models (Experience, Education, etc.)
@@ -55,6 +55,8 @@ This project is a full-stack application that allows users to create, update, an
     │   │   ├── CurrentProfile.js  # React component for displaying the current profile
     ├── README.md                  # Project documentation
     └── package.json               # Frontend dependencies
+\```
+
 
 
 
