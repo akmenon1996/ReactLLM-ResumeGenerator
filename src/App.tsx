@@ -9,12 +9,22 @@ import Header from './components/Header';
 
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [authChecked, setAuthChecked] = useState<boolean>(false);
+  const [initialRoute, setInitialRoute] = useState<string | null>(null);
 
   useEffect(() => {
+    // Check if the user is logged in from localStorage
     const username = localStorage.getItem('username');
     if (username) {
       setIsLoggedIn(true);
     }
+
+    // Save the last visited route before refresh
+    const lastRoute = window.location.pathname; // Get the current URL path
+    localStorage.setItem('lastRoute', lastRoute); // Store it in localStorage
+    setInitialRoute(lastRoute);
+
+    setAuthChecked(true); // Ensure we signal the check has been performed
   }, []);
 
   const handleLogin = (username: string) => {
@@ -24,16 +34,24 @@ const App: React.FC = () => {
 
   const handleLogout = () => {
     localStorage.removeItem('username');
+    localStorage.removeItem('lastRoute');
     setIsLoggedIn(false);
   };
 
+  // Show nothing (or a loading spinner) until authentication is checked
+  if (!authChecked) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <Router>
-      <Header onSignOut={handleLogout} />
+      <Header isLoggedIn={isLoggedIn} onSignOut={handleLogout} />
       <Routes>
         <Route
           path="/login"
-          element={<LoginPageWithOverview onLogin={(username: string) => handleLogin(username)} />}
+          element={
+            isLoggedIn ? <Navigate to={initialRoute || '/current-profile'} /> : <LoginPageWithOverview onLogin={handleLogin} />
+          }
         />
         <Route
           path="/current-profile"
@@ -51,7 +69,11 @@ const App: React.FC = () => {
           path="/view-resumes"
           element={isLoggedIn ? <ViewResumes /> : <Navigate to="/login" />}
         />
-        <Route path="*" element={<Navigate to={isLoggedIn ? "/current-profile" : "/login"} />} />
+        {/* Redirect to last visited page if logged in, or to login */}
+        <Route
+          path="*"
+          element={<Navigate to={isLoggedIn ? (initialRoute || '/current-profile') : '/login'} />}
+        />
       </Routes>
     </Router>
   );

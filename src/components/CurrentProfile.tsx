@@ -13,11 +13,15 @@ const CurrentProfile: React.FC = () => {
   // Fetch username from localStorage
   useEffect(() => {
     const storedUsername = localStorage.getItem('username');
-    if (storedUsername) {
-      setUsername(storedUsername); // Set the username from localStorage
+    const isAuthenticated = localStorage.getItem('isAuthenticated');
+  
+    if (!isAuthenticated) {
+      // If not authenticated, redirect to login page
+      navigate('/login');
     } else {
-      setUsername('Guest');
-    }
+      setUsername(storedUsername);
+    }; 
+    
   }, []);
 
   // Fetch the profile data when the username is set

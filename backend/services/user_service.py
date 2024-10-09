@@ -108,7 +108,6 @@ def wipe_profile_data(username):
         Project.query.filter_by(user_profile_id=user_profile.id).delete()
         Certification.query.filter_by(user_profile_id=user_profile.id).delete()
         Paper.query.filter_by(user_profile_id=user_profile.id).delete()
-
         # Commit the deletion of the profile data
         db.session.commit()
 

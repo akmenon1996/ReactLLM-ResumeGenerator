@@ -29,6 +29,7 @@ const LoginPageWithOverview: React.FC<LoginPageWithOverviewProps> = ({ onLogin }
         
         // Store username in localStorage after login
         localStorage.setItem('username', username);
+        localStorage.setItem('isAuthenticated', 'true');
         setError('');  // Clear any previous errors
         onLogin(username);  // Call onLogin with the logged-in username
         navigate('/current-profile');  // Navigate to profile

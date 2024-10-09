@@ -16,12 +16,13 @@ const UpdateProfile: React.FC = () => {
   // Fetch existing user profile on component mount
   useEffect(() => {
     const fetchProfile = async () => {
+      const isAuthenticated = localStorage.getItem('isAuthenticated');
       const storedUsername = localStorage.getItem('username');
-
-      if (!storedUsername) {
-        alert('Username is missing. Please log in again.');
-        return;
-      }
+    
+      if (!isAuthenticated) {
+        // If not authenticated, redirect to login page
+        navigate('/login');
+      }; 
 
       try {
         const response = await axios.get(`http://127.0.0.1:5000/api/profile?username=${storedUsername}`, {
@@ -59,14 +60,37 @@ const UpdateProfile: React.FC = () => {
   };
 
   // Wipe the current profile data and reset the form fields
-  const handleWipeProfile = () => {
-    setName('');
-    setPhone('');
-    setEmail('');
-    setUrls([{ label: '', url: '' }]); // Reset URLs to an empty state
-    setResumeFile(null);
-    setPastedData('');
+  const handleWipeProfile = async () => {
+    const storedUsername = localStorage.getItem('username');
+
+    if (!storedUsername) {
+      alert('Username is missing. Please log in again.');
+      return;
+    }
+
+    try {
+      console.log(`Executing --> http://127.0.0.1:5000/api/profile/wipe?username=${storedUsername}`)
+      const response = await axios.post(`http://127.0.0.1:5000/api/profile/wipe?username=${storedUsername}`, {}, {
+        withCredentials: true,
+      });
+
+      if (response.status === 200) {
+        setName('');
+        setPhone('');
+        setEmail('');
+        setUrls([{ label: '', url: '' }]);
+        setResumeFile(null);
+        setPastedData('');
+        alert('Profile wiped successfully!');
+      } else {
+        alert('Error wiping profile.');
+      }
+    } catch (error) {
+      console.error('Error wiping profile:', error);
+      alert('Error wiping profile.');
+    }
   };
+
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {

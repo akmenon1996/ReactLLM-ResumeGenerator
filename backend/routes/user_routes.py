@@ -109,11 +109,14 @@ def update_profile():
 @cross_origin(origin='http://localhost:3000', supports_credentials=True)
 def wipe_profile():
     username = request.args.get('username')
+    user_profile = UserProfile.query.filter_by(username=username).first()
     if not username:
         return jsonify({"message": "Username is required"}), 400
 
     # Wipe the profile data for the user
     result, status_code = wipe_profile_data(username)
+    URL.query.filter_by(user_profile_id=user_profile.id).delete()
+    db.session.commit()
     return jsonify(result), status_code
 
 # Get Profile Route
