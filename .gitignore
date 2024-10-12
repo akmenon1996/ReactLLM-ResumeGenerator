@@ -30,6 +30,10 @@ backend/open_ai_creds*
 
 test*
 
+venv
+
+*pycache*
+
 *db
  
 *.html
