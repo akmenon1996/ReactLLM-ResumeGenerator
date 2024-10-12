@@ -3,6 +3,11 @@ import { Card, CardContent, Typography, Button, Box, CircularProgress, List, Lis
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+
+const apiBaseUrl = process.env.NODE_ENV === 'production'
+  ? 'https://yourapp.pythonanywhere.com'  // Production URL
+  : 'http://127.0.0.1:5000';  
+  
 const CurrentProfile: React.FC = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState<string | null>(null);
@@ -30,7 +35,7 @@ const CurrentProfile: React.FC = () => {
       const fetchProfile = async () => {
         try {
           // Update the backend URL to the correct one
-          const response = await axios.get(`http://127.0.0.1:5000/api/profile?username=${username}`);
+          const response = await axios.get(`${apiBaseUrl}/api/profile?username=${username}`);
           setProfile(response.data);
         } catch (err) {
           setError('Failed to fetch profile');

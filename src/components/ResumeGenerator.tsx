@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { Button, TextField, Typography, Container, Box, Slider } from '@mui/material';
 import axios from 'axios';
 
+const apiBaseUrl = process.env.NODE_ENV === 'production'
+  ? 'https://yourapp.pythonanywhere.com'  // Production URL
+  : 'http://127.0.0.1:5000';  
+
 const ResumeGenerator: React.FC = () => {
   const [jobTitle, setJobTitle] = useState('');
   const [company, setCompany] = useState('');
@@ -34,7 +38,7 @@ const ResumeGenerator: React.FC = () => {
 
       // Make an API call to generate the resume via the backend
       const response = await axios.post(
-        `http://127.0.0.1:5000/api/generate-resume?username=${username}`,
+        `${apiBaseUrl}/api/generate-resume?username=${username}`,
         requestData,
         {
           headers: {

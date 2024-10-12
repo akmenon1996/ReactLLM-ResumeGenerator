@@ -7,6 +7,10 @@ interface LoginPageWithOverviewProps {
   onLogin: (username: string) => void;
 }
 
+const apiBaseUrl = process.env.NODE_ENV === 'production'
+  ? 'https://yourapp.pythonanywhere.com'  // Production URL
+  : 'http://127.0.0.1:5000';  
+
 const LoginPageWithOverview: React.FC<LoginPageWithOverviewProps> = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -18,8 +22,9 @@ const LoginPageWithOverview: React.FC<LoginPageWithOverviewProps> = ({ onLogin }
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
+      
       const response = await axios.post(
-        'http://127.0.0.1:5000/api/login',  // Replace with your backend URL
+        `${apiBaseUrl}/api/login`,  // Replace with your backend URL
         { username, password },
         { withCredentials: true, headers: { 'Content-Type': 'application/json' } }  // Ensure credentials are sent
       );
@@ -49,7 +54,7 @@ const LoginPageWithOverview: React.FC<LoginPageWithOverviewProps> = ({ onLogin }
     e.preventDefault();
     try {
       const response = await axios.post(
-        'http://127.0.0.1:5000/api/register',  // Replace with your backend URL
+        `${apiBaseUrl}/api/register`,  // Replace with your backend URL
         { username, password, email },
         { withCredentials: true, headers: { 'Content-Type': 'application/json' } }  // Ensure credentials are sent
       );
