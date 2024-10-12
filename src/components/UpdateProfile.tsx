@@ -129,7 +129,7 @@ const UpdateProfile: React.FC = () => {
   
     try {
       // Pass the username from localStorage as a query parameter in the API call
-      const response = await axios.post(`http://127.0.0.1:5000/api/profile?username=${storedUsername}`, formData, {
+      const response = await axios.post(`${apiBaseUrl}/api/profile?username=${storedUsername}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
