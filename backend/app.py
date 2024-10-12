@@ -7,9 +7,9 @@ from routes.user_routes import user_bp
 from routes.pdf_routes import pdf_bp
 from routes.resume_routes import resume_bp
 from db import db  # Import db from db.py
-from config import Config,DevelopmentConfig, ProductionConfig  # Import configuration
+from config import Config  # Import configuration
 
-app = Flask(__name__, static_folder='static', static_url_path='')
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 
 # Load the configuration from Config class
 app.config.from_object(Config)
@@ -46,4 +46,9 @@ with app.app_context():
     db.create_all()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    env = os.getenv('FLASK_ENV', 'development')
+    
+    if env == 'production':
+        app.run(host='0.0.0.0', port=8000, debug=False)  # production settings
+    else:
+        app.run(debug=True)  # development settings (with debug mode)
