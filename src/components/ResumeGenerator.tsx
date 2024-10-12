@@ -3,7 +3,7 @@ import { Button, TextField, Typography, Container, Box, Slider } from '@mui/mate
 import axios from 'axios';
 
 const apiBaseUrl = process.env.NODE_ENV === 'production'
-  ? 'https://yourapp.pythonanywhere.com'  // Production URL
+  ? 'https://abmenon.pythonanywhere.com'  // Production URL
   : 'http://127.0.0.1:5000';  
 
 const ResumeGenerator: React.FC = () => {

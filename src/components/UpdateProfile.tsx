@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const apiBaseUrl = process.env.NODE_ENV === 'production'
-  ? 'https://yourapp.pythonanywhere.com'  // Production URL
+  ? 'https://abmenon.pythonanywhere.com'  // Production URL
   : 'http://127.0.0.1:5000';  
 
 const UpdateProfile: React.FC = () => {
@@ -16,10 +16,6 @@ const UpdateProfile: React.FC = () => {
   const [resumeFile, setResumeFile] = useState<File | null>(null); // Resume file state
   const [pastedData, setPastedData] = useState(''); // Pasted new experience data
   const navigate = useNavigate();
-
-  const apiBaseUrl = process.env.NODE_ENV === 'production'
-  ? 'https://yourapp.pythonanywhere.com'  // Production URL
-  : 'http://127.0.0.1:5000';  
 
   // Fetch existing user profile on component mount
   useEffect(() => {
