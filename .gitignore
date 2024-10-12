@@ -33,3 +33,8 @@ test*
 *db
 
 *resume*
+
+
+.env
+
+*pycache*
