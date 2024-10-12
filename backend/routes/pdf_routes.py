@@ -1,9 +1,12 @@
 from flask import Blueprint, request, jsonify
 from services.pdf_service import handle_pdf_upload
+from flask_cors import cross_origin
 
 pdf_bp = Blueprint('pdf', __name__)
+allowed_origins = ["http://localhost:3000", "https://abmenon.pythonanywhere.com"]
 
 @pdf_bp.route('/api/upload-pdf', methods=['POST'])
+@cross_origin(origin=allowed_origins, supports_credentials=True)
 def upload_pdf():
     if 'file' not in request.files:
         return jsonify({"message": "No file part"}), 400

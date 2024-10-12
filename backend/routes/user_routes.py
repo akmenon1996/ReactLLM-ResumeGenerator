@@ -10,15 +10,17 @@ import os
 import tempfile
 from db import db
 
+
 user_bp = Blueprint('user_bp', __name__)
 
 # Path to save uploaded files temporarily
 UPLOAD_FOLDER = os.path.join(tempfile.gettempdir(), 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+allowed_origins = ["http://localhost:3000", "https://abmenon.pythonanywhere.com"]
 
 # Registration Route
 @user_bp.route('/api/register', methods=['POST', 'OPTIONS'])
-@cross_origin(origin='http://localhost:3000', supports_credentials=True)
+@cross_origin(origins=allowed_origins, supports_credentials=True)
 def register():
     data = request.json
     username = data.get('username')
@@ -30,7 +32,7 @@ def register():
 
 # Login Route
 @user_bp.route('/api/login', methods=['POST', 'OPTIONS'])
-@cross_origin(origin='http://localhost:3000', supports_credentials=True)
+@cross_origin(origins=allowed_origins, supports_credentials=True)
 def login():
     data = request.json
     username = data.get('username')
@@ -41,7 +43,7 @@ def login():
 
 # Profile Update Route - Handle PDF or Text Input
 @user_bp.route('/api/profile', methods=['POST'])
-@cross_origin(origin='http://localhost:3000', supports_credentials=True)
+@cross_origin(origins=allowed_origins, supports_credentials=True)
 def update_profile():
     # Get the username from the query parameters
     username = request.args.get('username')
@@ -106,7 +108,7 @@ def update_profile():
 
 # Route to wipe the user profile but retain the user record
 @user_bp.route('/api/profile/wipe', methods=['POST'])
-@cross_origin(origin='http://localhost:3000', supports_credentials=True)
+@cross_origin(origins=allowed_origins, supports_credentials=True)
 def wipe_profile():
     username = request.args.get('username')
     user_profile = UserProfile.query.filter_by(username=username).first()
@@ -121,7 +123,7 @@ def wipe_profile():
 
 # Get Profile Route
 @user_bp.route('/api/profile', methods=['GET'])
-@cross_origin(origin='http://localhost:3000', supports_credentials=True)
+@cross_origin(origins=allowed_origins, supports_credentials=True)
 def get_profile():
     username = request.args.get('username')
     if not username:
