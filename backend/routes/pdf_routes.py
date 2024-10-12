@@ -3,7 +3,7 @@ from services.pdf_service import handle_pdf_upload
 from flask_cors import cross_origin
 
 pdf_bp = Blueprint('pdf', __name__)
-allowed_origins = ["http://localhost:3000", "https://abmenon.pythonanywhere.com"]
+allowed_origins = ["*"]
 
 @pdf_bp.route('/api/upload-pdf', methods=['POST'])
 @cross_origin(origin=allowed_origins, supports_credentials=True)

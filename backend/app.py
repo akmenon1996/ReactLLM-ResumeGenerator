@@ -18,7 +18,7 @@ app.config.from_object(Config)
 db.init_app(app)
 
 # Set up allowed origins for both development and production
-allowed_origins = ["http://localhost:3000", "https://abmenon.pythonanywhere.com"]
+allowed_origins = ["*"]
 
 
 # Enable CORS globally (adjust the origins as needed for production)

@@ -16,7 +16,7 @@ user_bp = Blueprint('user_bp', __name__)
 # Path to save uploaded files temporarily
 UPLOAD_FOLDER = os.path.join(tempfile.gettempdir(), 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-allowed_origins = ["http://localhost:3000", "https://abmenon.pythonanywhere.com"]
+allowed_origins = ["*"]
 
 # Registration Route
 @user_bp.route('/api/register', methods=['POST', 'OPTIONS'])

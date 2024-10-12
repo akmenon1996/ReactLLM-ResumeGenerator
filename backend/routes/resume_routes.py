@@ -11,7 +11,7 @@ resume_bp = Blueprint('resume_bp', __name__)
 # Path to save generated files temporarily
 OUTPUT_FOLDER = os.path.join(tempfile.gettempdir(), 'resumes')
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
-allowed_origins = ["http://localhost:3000", "https://abmenon.pythonanywhere.com"]
+allowed_origins = ["*"]
 
 @resume_bp.route('/api/generate-resume', methods=['POST','OPTIONS'])
 @cross_origin(origins=allowed_origins, supports_credentials=True)
