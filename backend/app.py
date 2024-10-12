@@ -7,7 +7,7 @@ from routes.user_routes import user_bp
 from routes.pdf_routes import pdf_bp
 from routes.resume_routes import resume_bp
 from db import db  # Import db from db.py
-from config import Config  # Import configuration
+from config import Config,DevelopmentConfig, ProductionConfig  # Import configuration
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 
@@ -17,8 +17,12 @@ app.config.from_object(Config)
 # Initialize the SQLAlchemy instance with the app
 db.init_app(app)
 
+# Set up allowed origins for both development and production
+allowed_origins = ["http://localhost:3000", "https://abmenon.pythonanywhere.com"]
+
+
 # Enable CORS globally (adjust the origins as needed for production)
-CORS(app, supports_credentials=True, resources={r"/*": {"origins": "http://localhost:3000"}})
+CORS(app, supports_credentials=True, resources={r"/*": {"origins": allowed_origins}})
 
 # Register Blueprints for your API routes
 app.register_blueprint(user_bp)
