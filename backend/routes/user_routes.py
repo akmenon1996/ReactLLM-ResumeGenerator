@@ -63,6 +63,7 @@ def update_profile():
         file_path = os.path.join(UPLOAD_FOLDER, filename)
         pdf_file.save(file_path)
         resume_text = handle_pdf_upload(file_path)
+        print(resume_text)
         if not resume_text:
             return jsonify({"message": "Error processing PDF"}), 500
     else:
